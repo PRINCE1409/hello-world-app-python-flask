@@ -1,24 +1,8 @@
-FROM 347907137948.dkr.ecr.us-east-1.amazonaws.com/python:3.4.3
-
-RUN apt-get update &&\
-    apt-get install -y -q sqlite3 &&\
-    rm -rf /var/lib/apt/lists/*
-
-ENV USE_ENV true
-ENV WORKDIR /opt/services/hello-world-python
-ENV HOME $WORKDIR
-
-RUN groupadd app &&\
-    useradd -g app -d $WORKDIR -s /sbin/nologin -c 'Docker image user for the app' app &&\
-    mkdir -p $WORKDIR
-
-ADD . /opt/services/hello-world-python
-
-RUN pip install -r $WORKDIR/requirements.txt
-
-RUN chown -R app:app $WORKDIR
-
-USER app
-
-CMD cd $WORKDIR && python ./app.py
-
+FROM alpine:3.5
+RUN apk add --update py2-pip
+COPY requirements.txt /usr/src/app/
+RUN pip install --no-cache-dir -r /usr/src/app/requirements.txt
+COPY app.py /usr/src/app/
+COPY templates/index.html /usr/src/app/templates/
+EXPOSE 5000
+CMD ["python", "/usr/src/app/app.py"]
